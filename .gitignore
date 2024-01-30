@@ -161,3 +161,7 @@ cython_debug/
 
 #outputfiles
 .csv
+.yml
+.yaml
+.xlsx
+
