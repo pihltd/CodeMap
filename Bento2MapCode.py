@@ -35,8 +35,9 @@ def parseMDF(mdffile,type):
         return modeldict, repo
    
 def cleanline(text):
-    cleantext = re.sub(r'\W+',' ',text)
-    return cleantext
+    if isinstance(text, str):
+        text = re.sub(r'\W+',' ',text)
+    return text
 
 
 def buildLine(linedict, fieldlist):
