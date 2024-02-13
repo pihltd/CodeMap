@@ -3,19 +3,15 @@ import yaml
 import re
 import pandas as pd
 
+def readConfigs(yamlfile):
+    with open(yamlfile) as f:
+        configs = yaml.load(f, Loader=yaml.FullLoader)
+    return configs
 
-def buildConstants(handle):
+def buildConfigConstants(configjson):
     constants = {}
-    constants['Batch User'] = "pihl"
-    constants['Batch Name'] = "CRDC Batch 1"
-    constants['Model Name'] = handle
-    constants['Model Description'] = f"{handle} Data model"
-    constants['Model Version'] = "1.3"
-    constants["Context"] = "CRDC"
-    constants['Primary Modeling Language'] = "YAML"
-    constants['Model Type'] = "Physical Model"
-    constants['Element Type'] = "Node"
-
+    for key, value in configjson['modelinfo'].items():
+        constants[key] = value
     return constants
 
 
@@ -49,35 +45,35 @@ def buildLine(linedict, fieldlist):
             line.append("\t")
     return line
 
-def lineSet(repo, node):
+def lineSet(node, configs):
     line = {}
-    line = buildConstants(repo)
-    line['Element Name'] = node
+    line = buildConfigConstants(configs)
+    line['Element Long Name'] = node
     line['Element Physical Name'] = node
     return line
 
 def main(args):
+
+    codemapfields = ["DO NOT USE","Batch User","Batch Name","Seq ID","*Model Name",	"*Model ID","*Model Version","Element Long  Name","*Element Physical Name","Element Description",
+                     "Element Type","Characteristic Long Name","*Characteristic Physical Name","Characteristic Order","Characteristic Description","Characteristic Type","Characteristic Min Length",
+                    "Characteristic Max Length","Characteristic Data Type", "Characteristic UOM","Characteristic Mandatory?","Characteristic PK?","Characteristic Default","CDE ID",
+                    "CDE Version","Element Mapping Group","Characteristic FK?","FK Element Name","FK Element Characteristic Name","Comments"]
     
-    codemapfileds = ["DO NOT USE","Batch User", "Batch Name","Seq ID","Model Name","Model Description","Model ID (Update Only)", "Model Version","Context",
-                     "Primary Modeling Language","Model Type","Element Name","Element Physical Name","Element Description","Element Type","Characteristic Name","Characteristic Physical Name",
-                     "Characteristics Order","Characteristic Description","Characteristic Type","Characteristic Min Length","Characteristic Max Length", "Characteristic Data Type","Characteristic Mandatory",
-                     "Characteristics PK?","Characteristic Default","CDE ID","CDE Version","Element Mapping Group (Optional if no CDE is associated)","Comments","Characteristic FK?",
-                     "FK Element Name","FK Element Name"]
-    
-    modeldict, repo = parseMDF(args.model,"model")
-    propdict = parseMDF(args.props, "props")
+    configs = readConfigs(args.configfile)
+    modeldict, repo = parseMDF(configs['scriptinfo']['modelfile'],"model")
+    propdict = parseMDF(configs['scriptinfo']['propsfile'], "props")
     datalist = []
 
     index = 1
     for node, properties in modeldict.items():
-        line = lineSet(repo, node)
+        line = lineSet(node, configs)
         #properties['Props'] can be null
         if properties['Props'] is not None:
             for propname in properties['Props']:
                 if propname in propdict:
                     line['Seq ID'] = index
                     index = index + 1
-                    line['Characteristic Name'] = propname
+                    line['Characteristic Long Name'] = propname
                     line['Characteristic Physical Name'] = propname
                     if "Desc" in propdict[propname]:
                         line['Characteristic Description'] = cleanline(propdict[propname]['Desc'])
@@ -91,7 +87,7 @@ def main(args):
                             req = 'Yes'
                         if req == 'Preferred':
                             req = None
-                        line['Characteristic Mandatory'] = req
+                        line['Characteristic Mandatory?'] = req
                     if "Term" in propdict[propname]:
                         #This gets a little funky as Term is a list of dictionary
                         for entry in propdict[propname]['Term']:
@@ -108,13 +104,12 @@ def main(args):
                     #At this point we've goten everything from the MDF file
                     datalist.append(line)
                     #Reset the line
-                    line = lineSet(repo, node)
+                    line = lineSet(node, configs)
                 else:
-                    line = lineSet(repo, node)
+                    line = lineSet(node, configs)
     #Create the dataframe
-    finaldf = pd.DataFrame(datalist, columns=codemapfileds)
-    #print(finaldf)
-    finaldf.to_csv(args.output, sep="\t")
+    finaldf = pd.DataFrame(datalist, columns=codemapfields)
+    finaldf.to_csv(configs['scriptinfo']['outputfile'], sep="\t", index=False)
 
 
 
@@ -124,9 +119,10 @@ def main(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("-p", "--props", required=True, help = "MDF props file" )
-    parser.add_argument("-m", "--model", required=True, help="MDF model file")
-    parser.add_argument("-o", "--output", required=True, help="Output csv file")
+    #parser.add_argument("-p", "--props", help = "MDF props file" )
+    #parser.add_argument("-m", "--model",  help="MDF model file")
+    #parser.add_argument("-o", "--output",  help="Output csv file")
+    parser.add_argument("-c", "--configfile", required=True,  help="Configuration file containing all the input info")
 
     args = parser.parse_args()
 
