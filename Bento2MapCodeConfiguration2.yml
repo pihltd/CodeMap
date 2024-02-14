@@ -1,0 +1,10 @@
+"modelinfo":
+  "b": "pihl"
+  "c": "CDS Batch 1"
+  "e": "CDS"
+  "g": "1.3"
+  "k": "Attributes"
+"scriptinfo":
+  "propsfile": "CRDCProps.yml"
+  "modelfile": "CRDC.yml"
+  "outputfile": "ConfigOutput.csv"
