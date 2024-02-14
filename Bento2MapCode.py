@@ -5,7 +5,6 @@ import pandas as pd
 import pprint
 import sys
 #This version will attempt to future proof changes to the column names by using a dictionary where the key is the Excel column ID
-#TODO:  Make sure nodes are referred to as Nodes and properties as Properties in the Element Type and Characteristic Type columns
 
 def readConfigs(yamlfile):
     with open(yamlfile) as f:
@@ -55,41 +54,22 @@ def lineSet(node, configs, codemapdict):
     line[codemapdict['i']] = node
     return line
 
-#def nodeSet(node, configs, codemapdict):
-#    line = {}
-#    line = buildConfigConstants(configs, codemapdict)
-#    #Element Long Name
-#    line[codemapdict['h']] = node
-#    #Element Physical Name
-#    line[codemapdict['i']] = node
-#    #Element Type
-#    line[codemapdict['k']] = 'Node'
-#    #Characteristic Type
-#    line[codemapdict['p']] = 'Node'
-#    return line
-
 
 def main(args):
-    codemapdict = {"a":"DO NOT USE","b":"Batch User","c":"Batch Name","d":"Seq ID","e":"*Model Name","f":"*Model ID","g":"*Model Version","h":"Element Long  Name","i":"*Element Physical Name","j":"Element Description",
-                     "k":"Element Type","l":"Characteristic Long Name","m":"*Characteristic Physical Name","n":"Characteristic Order","o":"Characteristic Description","p":"Characteristic Type","q":"Characteristic Min Length",
-                    "r":"Characteristic Max Length","s":"Characteristic Data Type", "t":"Characteristic UOM","u":"Characteristic Mandatory?","v":"Characteristic PK?","w":"Characteristic Default","x":"CDE ID",
-                    "y":"CDE Version","z":"Element Mapping Group","aa":"Characteristic FK?","ab":"FK Element Name","ac":"FK Element Characteristic Name","ad":"Comments"}
-
+    configs = readConfigs(args.configfile)
+    codemapdict = configs['headers']
     
     codemapfields = []
     for key, value in codemapdict.items():
         codemapfields.append(value)
     datalist = []
 
-    configs = readConfigs(args.configfile)
+    
     modeldict = parseMDF(configs['scriptinfo']['modelfile'],"model")
     propdict = parseMDF(configs['scriptinfo']['propsfile'], "props")
 
     index = 1
     for node, properties in modeldict.items():
-        #Node is the graph node and properties is a dictionary associated with the property
-       # nodeline = nodeSet(node, configs, codemapdict)
-       # datalist.append(nodeline)
         line = lineSet(node, configs, codemapdict)
         #properties['Props'] can be null
         if properties['Props'] is not None:
@@ -151,9 +131,6 @@ def main(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    #parser.add_argument("-p", "--props", help = "MDF props file" )
-    #parser.add_argument("-m", "--model",  help="MDF model file")
-    #parser.add_argument("-o", "--output",  help="Output csv file")
     parser.add_argument("-c", "--configfile", required=True,  help="Configuration file containing all the input info")
 
     args = parser.parse_args()
