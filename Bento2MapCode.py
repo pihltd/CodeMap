@@ -55,14 +55,18 @@ def lineSet(node, configs, codemapdict):
     line[codemapdict['i']] = node
     return line
 
-def nodeSet(node, configs, codemapdict):
-    line = {}
-    line = buildConfigConstants(configs, codemapdict)
-    line[codemapdict['h']] = node
-    line[codemapdict['i']] = node
-    line[codemapdict['k']] = 'Node'
-    line[codemapdict['p']] = 'Node'
-    return line
+#def nodeSet(node, configs, codemapdict):
+#    line = {}
+#    line = buildConfigConstants(configs, codemapdict)
+#    #Element Long Name
+#    line[codemapdict['h']] = node
+#    #Element Physical Name
+#    line[codemapdict['i']] = node
+#    #Element Type
+#    line[codemapdict['k']] = 'Node'
+#    #Characteristic Type
+#    line[codemapdict['p']] = 'Node'
+#    return line
 
 
 def main(args):
@@ -84,8 +88,8 @@ def main(args):
     index = 1
     for node, properties in modeldict.items():
         #Node is the graph node and properties is a dictionary associated with the property
-        nodeline = nodeSet(node, configs, codemapdict)
-        datalist.append(nodeline)
+       # nodeline = nodeSet(node, configs, codemapdict)
+       # datalist.append(nodeline)
         line = lineSet(node, configs, codemapdict)
         #properties['Props'] can be null
         if properties['Props'] is not None:
@@ -105,7 +109,7 @@ def main(args):
                         #Type can have a "pattern" dict as a value, so only clean up if a string
                         if isinstance(propdict[propname]['Type'],str):
                             #Characteristic Type
-                            line[codemapdict['p']] = cleanline(propdict[propname]['Type'])
+                            line[codemapdict['s']] = cleanline(propdict[propname]['Type'])
                     if "Req" in propdict[propname]:
                         req = propdict[propname]['Req']
                         if isinstance(req, bool):
