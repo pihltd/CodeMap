@@ -1,6 +1,7 @@
 import argparse
 import yaml
 import re
+import requests
 import pandas as pd
 import pprint
 import sys
@@ -54,6 +55,13 @@ def lineSet(node, configs, codemapdict):
     line[codemapdict['i']] = node
     return line
 
+def getCDEInfo(publicID):
+    apiurl = "https://cadsrapi.cancer.gov/rad/NCIAPI/1.0/api"
+    endpoint = "/DataElement/"
+    headers = {"accept":"application/json"}
+    cderes = requests.get(apiurl+endpoint+publicID, headers=headers)
+    cdeinfo = cderes.json()
+    return cdeinfo
 
 def main(args):
     configs = readConfigs(args.configfile)
@@ -67,6 +75,16 @@ def main(args):
     
     modeldict = parseMDF(configs['scriptinfo']['modelfile'],"model")
     propdict = parseMDF(configs['scriptinfo']['propsfile'], "props")
+
+    #if args.addcdeinfo:
+    #    cdeinfo = getCDEInfo('12571096')
+        #pprint.pprint(cdeinfo)
+        #if "cdefile" in configs['scriptinfo']:
+        #    cdedict = readConfigs(configs['scriptinfo']['cdefile'])
+        #else:
+        #    cdedict = None
+        #pprint.pprint(cdedict)
+        #sys.exit(0)
 
     index = 1
     for node, properties in modeldict.items():
@@ -101,11 +119,16 @@ def main(args):
                     if "Term" in propdict[propname]:
                         #This gets a little funky as Term is a list of dictionary
                         for entry in propdict[propname]['Term']:
+                            #This works if the CDE ID is in the props file.
                             if entry['Origin'] == "caDSR":
                                 cdeid = cleanline(entry['Code'])
+                                version = cleanline(entry['Version'])
+                                #This if statment is because of the nasty habit of some modelers to use "code ID" as a placeholder
                                 if cdeid not in ['code ID']:
                                     #CDE ID
-                                    line[codemapdict['x']] = cleanline(entry['Code'])
+                                    #line[codemapdict['x']] = cleanline(entry['Code'])
+                                    line[codemapdict['x']] = cdeid
+                                    line[codemapdict['y']] = version
                                 else:
                                     #Element Mapping Group (Optional if no CDE is associated)
                                     line[codemapdict['z']] = node
@@ -132,6 +155,7 @@ def main(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-c", "--configfile", required=True,  help="Configuration file containing all the input info")
+    #parser.add_argument("-a", "--addcdeinfo", help="Add additionl information about the CDEs")
 
     args = parser.parse_args()
 
