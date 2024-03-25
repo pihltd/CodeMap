@@ -1,14 +1,14 @@
 "modelinfo":
   "b": "pihl"
-  "c": "CRDC Batch 2"
+  "c": "CRDC Batch 3"
   "e": "CRDC Search"
-  "g": "1.0"
+  "g": "1.1"
   "k": "Node"
   "p": "Property"
 "scriptinfo":
-  "propsfile": "CRDCProps.yml"
-  "modelfile": "CRDC.yml"
-  "outputfile": "CRDCSearch_CodeMape.csv"
+  "propsfile": "/home/pihl/models/crdc-search/crdc_search_v1_1_props.yml"
+  "modelfile": "/home/pihl/models/crdc-search/crdc_search_v1_1.yml"
+  "outputfile": "/home/pihl/models/crdc-search/CRDCSearch_v1_1_CodeMape.csv"
 "headers":
   "a": "DO NOT USE"
   "b": "Batch User"

@@ -20,9 +20,11 @@ def getCDEName(cdeid, version):
     if results.status_code == 200:
         results = json.loads(results.content.decode())
         cdename = results['DataElement']['preferredName']
+        definition = results['DataElement']['preferredDefinition']
     else:
         cdename = 'caDSR Name Error'
-    return cdename
+    return cdename, definition
+
 
 
 def makeModelFile(xldf):
@@ -43,6 +45,7 @@ def makeModelFile(xldf):
                 nodejson[node]['Tags'] = {'Category':'value', 'Assignment':'value', 'Class':'value', 'Template':'Yes'}
     modeljson['Nodes'] = nodejson
     modeljson['Handle'] = 'CRDC Search'
+    modeljson['Version'] = "1"
     return modeljson
 
 def parseRow(row):
@@ -62,6 +65,7 @@ def makePropFile(xldf):
             nodejson = {}
             nodejson = parseRow(row)
             propertyname = row['Attribute Name']
+            cdedescription = "Text"
             #Need to handle with and without CDE separately since with CDE has 3 lines
             if row['Tag Name'] in ('caDSR CDE ID', ' '):
                 if row['Tag Name'] == 'caDSR CDE ID':
@@ -69,14 +73,18 @@ def makePropFile(xldf):
                     temp = {}
                     temp['Origin'] = 'caDSR'
                     temp['Code'] = int(row['Tag Value'])
-                    temp['Value'] = getCDEName(row['Tag Value'],1)
+                    cdename, cdedefinition = getCDEName(row['Tag Value'],1)
+                    temp['Value'] = cdename
                     nodejson['Term'].append(temp)
                 propjson['PropDefinitions'][propertyname] = nodejson
+                propjson['PropDefinitions'][propertyname]['Desc'] = cdedefinition
 
+    propjson['Handle'] = 'CRDC Search'
+    propjson['Version'] = '1'
     return propjson
 
 def updateVersion(jsonthing, xldf):
-    #print(jsonthing)
+    #In the Excel file, the version is a string that can look like a float.  This turns it to int.
     for index, row in xldf.iterrows():
         if row['Tag Name'] == 'caDSR CDE Version':
             version = row['Tag Value']
@@ -96,8 +104,10 @@ def writeYAML(filename, jsonthing):
 def main(args):
     #Read the Excel file into a dataframe
     xldf = readExcel(args.excelfile, args.sheetname)
+    #Create the MDF Model file and write 
     modeljson = makeModelFile(xldf)
     writeYAML(args.mdffile, modeljson)
+    #Create the MDF Property file and write
     propjson = makePropFile(xldf)
     propjson = updateVersion(propjson, xldf)
     writeYAML(args.propfile, propjson)

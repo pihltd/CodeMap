@@ -35,6 +35,9 @@ def cleanline(text):
         text = re.sub(r'\W+',' ',text)
     return text
 
+def hasNubmers(text):
+    return re.match("^[0-9]*$", text)
+
 
 def buildLine(linedict, fieldlist):
     line = []
@@ -76,16 +79,6 @@ def main(args):
     modeldict = parseMDF(configs['scriptinfo']['modelfile'],"model")
     propdict = parseMDF(configs['scriptinfo']['propsfile'], "props")
 
-    #if args.addcdeinfo:
-    #    cdeinfo = getCDEInfo('12571096')
-        #pprint.pprint(cdeinfo)
-        #if "cdefile" in configs['scriptinfo']:
-        #    cdedict = readConfigs(configs['scriptinfo']['cdefile'])
-        #else:
-        #    cdedict = None
-        #pprint.pprint(cdedict)
-        #sys.exit(0)
-
     index = 1
     for node, properties in modeldict.items():
         line = lineSet(node, configs, codemapdict)
@@ -122,15 +115,20 @@ def main(args):
                             #This works if the CDE ID is in the props file.
                             if entry['Origin'] == "caDSR":
                                 cdeid = cleanline(entry['Code'])
-                                version = cleanline(entry['Version'])
-                                #This if statment is because of the nasty habit of some modelers to use "code ID" as a placeholder
-                                if cdeid not in ['code ID']:
-                                    #CDE ID
-                                    #line[codemapdict['x']] = cleanline(entry['Code'])
-                                    line[codemapdict['x']] = cdeid
-                                    line[codemapdict['y']] = version
+                                #Because people insiste on doing stupid stuff like putting "Pending" as a CDE ID, we have to check and see what the stinking thing is
+                                cdeid = str(cdeid)
+                                if hasNubmers(cdeid):
+                                    version = cleanline(entry['Version'])
+                                    #This if statment is because of the nasty habit of some modelers to use "code ID" as a placeholder
+                                    if cdeid not in ['code ID']:
+                                        #CDE ID
+                                        #line[codemapdict['x']] = cleanline(entry['Code'])
+                                        line[codemapdict['x']] = cdeid
+                                        line[codemapdict['y']] = version
+                                    else:
+                                        #Element Mapping Group (Optional if no CDE is associated)
+                                        line[codemapdict['z']] = node
                                 else:
-                                    #Element Mapping Group (Optional if no CDE is associated)
                                     line[codemapdict['z']] = node
                             else:
                                 line[codemapdict['z']] = node

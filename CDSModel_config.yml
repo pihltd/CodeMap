@@ -2,13 +2,13 @@
   "b": "pihl"
   "c": "CDS Batch 2"
   "e": "CDS Data Model"
-  "g": "1.3"
+  "g": "3.0.0"
   "k": "Node"
   "p": "Property"
 "scriptinfo":
   "propsfile": "/home/pihl/models/cds-model/model-desc/cds-model-props.yml"
   "modelfile": "/home/pihl/models/cds-model/model-desc/cds-model.yml"
-  "outputfile": "CDSDataModel_CodeMap.csv"
+  "outputfile": "CDSDataModel_3_0_0_CodeMap.csv"
 "headers":
   "a": "DO NOT USE"
   "b": "Batch User"

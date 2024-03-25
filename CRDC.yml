@@ -1,0 +1,238 @@
+Handle: CRDC Search
+Nodes:
+  clinical_observation:
+    Desc: text
+    Props:
+    - days_to_birth
+    - sex
+    - gender_identity
+    - vital_status
+    Tags:
+      Assignment: value
+      Category: value
+      Class: value
+      Template: 'Yes'
+  diagnosis:
+    Desc: text
+    Props:
+    - disease_code
+    - age_at_diagnosis
+    - primary_diagnosis
+    - grade
+    - morphology
+    - tissue_or_organ_of_origin
+    Tags:
+      Assignment: value
+      Category: value
+      Class: value
+      Template: 'Yes'
+  drug_intervention:
+    Desc: text
+    Props: []
+    Tags:
+      Assignment: value
+      Category: value
+      Class: value
+      Template: 'Yes'
+  file:
+    Desc: text
+    Props:
+    - crdc_file_id
+    - description
+    - type
+    - checksum_value
+    - compression_status
+    - format
+    - size
+    - category
+    - drs_uri
+    - name
+    - checksum_type
+    Tags:
+      Assignment: value
+      Category: value
+      Class: value
+      Template: 'Yes'
+  file_identifier:
+    Desc: text
+    Props:
+    - component_field_name
+    - component_id_value
+    - component_name
+    Tags:
+      Assignment: value
+      Category: value
+      Class: value
+      Template: 'Yes'
+  file_specimen:
+    Desc: text
+    Props: []
+    Tags:
+      Assignment: value
+      Category: value
+      Class: value
+      Template: 'Yes'
+  file_subject:
+    Desc: text
+    Props: []
+    Tags:
+      Assignment: value
+      Category: value
+      Class: value
+      Template: 'Yes'
+  observation:
+    Desc: text
+    Props: []
+    Tags:
+      Assignment: value
+      Category: value
+      Class: value
+      Template: 'Yes'
+  person:
+    Desc: text
+    Props:
+    - role_type
+    - middle_name
+    - first_name
+    - last_name
+    - orcid
+    Tags:
+      Assignment: value
+      Category: value
+      Class: value
+      Template: 'Yes'
+  prgprjstudy_identifier:
+    Desc: text
+    Props:
+    - component_field_name
+    - component_id_value
+    - component_name
+    Tags:
+      Assignment: value
+      Category: value
+      Class: value
+      Template: 'Yes'
+  procedure:
+    Desc: text
+    Props: []
+    Tags:
+      Assignment: value
+      Category: value
+      Class: value
+      Template: 'Yes'
+  program:
+    Desc: text
+    Props:
+    - crdc_program_id
+    - short_name
+    - name
+    Tags:
+      Assignment: value
+      Category: value
+      Class: value
+      Template: 'Yes'
+  project:
+    Desc: text
+    Props:
+    - short_name
+    - crdc_project_id
+    - name
+    Tags:
+      Assignment: value
+      Category: value
+      Class: value
+      Template: 'Yes'
+  radiation:
+    Desc: text
+    Props: []
+    Tags:
+      Assignment: value
+      Category: value
+      Class: value
+      Template: 'Yes'
+  specimen:
+    Desc: text
+    Props:
+    - crdc_specimen_id
+    - tissue_disease_status
+    - uberon_specimen_anatomic_site
+    Tags:
+      Assignment: value
+      Category: value
+      Class: value
+      Template: 'Yes'
+  specimen_identifier:
+    Desc: text
+    Props:
+    - component_field_name
+    - component_id_value
+    - component_name
+    Tags:
+      Assignment: value
+      Category: value
+      Class: value
+      Template: 'Yes'
+  specimen_relationship:
+    Desc: text
+    Props: []
+    Tags:
+      Assignment: value
+      Category: value
+      Class: value
+      Template: 'Yes'
+  study:
+    Desc: text
+    Props:
+    - dbGap_study_accession
+    - short_name
+    - crdc_study_id
+    - name
+    Tags:
+      Assignment: value
+      Category: value
+      Class: value
+      Template: 'Yes'
+  subject:
+    Desc: text
+    Props:
+    - taxon
+    - ethnicity
+    - race
+    - cause_of_death
+    - crdc_subject_id
+    - year_of_birth
+    Tags:
+      Assignment: value
+      Category: value
+      Class: value
+      Template: 'Yes'
+  subject_identifier:
+    Desc: text
+    Props:
+    - component_field_name
+    - component_id_value
+    - component_name
+    Tags:
+      Assignment: value
+      Category: value
+      Class: value
+      Template: 'Yes'
+  subject_specimen:
+    Desc: text
+    Props: []
+    Tags:
+      Assignment: value
+      Category: value
+      Class: value
+      Template: 'Yes'
+  treatment:
+    Desc: text
+    Props:
+    - anatomic_site
+    - type
+    - therapy_indicator
+    Tags:
+      Assignment: value
+      Category: value
+      Class: value
+      Template: 'Yes'

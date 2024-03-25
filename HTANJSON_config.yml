@@ -1,0 +1,4 @@
+"jsonschema" : "/home/pihl/models/data-models/HTAN.model.jsonld"
+"csvschema" : "/home/pihl/models/data-models/HTAN.model.csv"
+"mdf_model_file" : "/home/pihl/models/data-models/HTANJSON.model.yml"
+"mdf_props_file" : "/home/pihl/models/data-models/HTANJSON.model_props.yml"

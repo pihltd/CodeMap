@@ -1,0 +1,310 @@
+PropDefinitions:
+  age_at_diagnosis:
+    Desc: text
+    Req: 'No'
+    Term:
+    - Code: 10609539
+      Origin: caDSR
+      Value: caDSR Name Error
+      Version: 1
+    Type: int
+  anatomic_site:
+    Desc: text
+    Req: 'No'
+    Term:
+    - Code: 14461856
+      Origin: caDSR
+      Value: Therapeutic Procedure Anatomic Site Uberon Identifier
+      Version: 1
+    Type: code
+  category:
+    Desc: text
+    Req: 'No'
+    Type: code
+  cause_of_death:
+    Desc: text
+    Req: 'No'
+    Term:
+    - Code: 4783274
+      Origin: caDSR
+      Value: Primary Cause of Death Reason
+      Version: 1
+    Type: code
+  checksum_type:
+    Desc: text
+    Req: 'No'
+    Term:
+    - Code: 11475057
+      Origin: caDSR
+      Value: Electronic Data File Checksum Type
+      Version: 1
+    Type: code
+  checksum_value:
+    Desc: text
+    Req: 'No'
+    Term:
+    - Code: 11480133
+      Origin: caDSR
+      Value: caDSR Name Error
+      Version: 1
+    Type: string
+  component_field_name:
+    Desc: text
+    Req: 'No'
+    Type: string
+  component_id_value:
+    Desc: text
+    Req: 'No'
+    Type: string
+  component_name:
+    Desc: text
+    Req: 'No'
+    Type: string
+  compression_status:
+    Desc: text
+    Req: 'No'
+    Term:
+    - Code: 11387114
+      Origin: caDSR
+      Value: Electronic Data File Compression Status
+      Version: 1
+    Type: code
+  crdc_file_id:
+    Desc: text
+    Req: 'No'
+    Type: string
+  crdc_program_id:
+    Desc: text
+    Req: 'No'
+    Type: string
+  crdc_project_id:
+    Desc: text
+    Req: 'No'
+    Type: stirng
+  crdc_specimen_id:
+    Desc: text
+    Req: 'No'
+    Type: string
+  crdc_study_id:
+    Desc: text
+    Req: 'No'
+    Type: string
+  crdc_subject_id:
+    Desc: text
+    Req: 'No'
+    Type: string
+  days_to_birth:
+    Desc: text
+    Req: 'No'
+    Type: int
+  dbGap_study_accession:
+    Desc: text
+    Req: 'No'
+    Term:
+    - Code: 11524544
+      Origin: caDSR
+      Value: caDSR Name Error
+      Version: 1
+    Type: string
+  description:
+    Desc: text
+    Req: 'No'
+    Term:
+    - Code: 11280338
+      Origin: caDSR
+      Value: caDSR Name Error
+      Version: 1
+    Type: string
+  disease_code:
+    Desc: text
+    Req: 'No'
+    Term:
+    - Code: 11479873
+      Origin: caDSR
+      Value: Diagnosis Disease or Disorder ICD-10-CM Code
+      Version: 1
+    Type: code
+  drs_uri:
+    Desc: text
+    Req: 'No'
+    Type: string
+  ethnicity:
+    Desc: text
+    Req: 'No'
+    Term:
+    - Code: 2192217
+      Origin: caDSR
+      Value: Ethnicity Category Text
+      Version: 2
+    Type: code
+  first_name:
+    Desc: text
+    Req: 'No'
+    Term:
+    - Code: 2179589
+      Origin: caDSR
+      Value: caDSR Name Error
+      Version: 2
+    Type: string
+  format:
+    Desc: text
+    Req: 'No'
+    Term:
+    - Code: 11416926
+      Origin: caDSR
+      Value: Electronic Data File Format Type
+      Version: 1
+    Type: code
+  gender_identity:
+    Desc: text
+    Req: 'No'
+    Type: code
+  grade:
+    Desc: text
+    Req: 'No'
+    Term:
+    - Code: 11325685
+      Origin: caDSR
+      Value: Diagnosis Tumor Grade
+      Version: 1
+    Type: code
+  last_name:
+    Desc: text
+    Req: 'No'
+    Term:
+    - Code: 2179591
+      Origin: caDSR
+      Value: caDSR Name Error
+      Version: 2
+    Type: string
+  middle_name:
+    Desc: text
+    Req: 'No'
+    Term:
+    - Code: 2179590
+      Origin: caDSR
+      Value: caDSR Name Error
+      Version: 2
+    Type: string
+  morphology:
+    Desc: text
+    Req: 'No'
+    Term:
+    - Code: 11326261
+      Origin: caDSR
+      Value: Specimen Tumor Tissue ICD-O-3 Morphology Code
+      Version: 1
+    Type: code
+  name:
+    Desc: text
+    Req: 'No'
+    Term:
+    - Code: 11459810
+      Origin: caDSR
+      Value: caDSR Name Error
+      Version: 1
+    Type: string
+  orcid:
+    Desc: text
+    Req: 'No'
+    Term:
+    - Code: 10624734
+      Origin: caDSR
+      Value: caDSR Name Error
+      Version: 2
+    Type: string
+  primary_diagnosis:
+    Desc: text
+    Req: 'No'
+    Type: code
+  race:
+    Desc: text
+    Req: 'No'
+    Term:
+    - Code: 2192199
+      Origin: caDSR
+      Value: Race Category Text
+      Version: 1
+    Type: code
+  role_type:
+    Desc: text
+    Req: 'No'
+    Term:
+    - Code: 2201713
+      Origin: caDSR
+      Value: Affiliation Role Association Type
+      Version: 2
+    Type: code
+  sex:
+    Desc: text
+    Req: 'No'
+    Type: code
+  short_name:
+    Desc: text
+    Req: 'No'
+    Term:
+    - Code: 11459812
+      Origin: caDSR
+      Value: caDSR Name Error
+      Version: 1
+    Type: string
+  size:
+    Desc: text
+    Req: 'No'
+    Term:
+    - Code: 11479876
+      Origin: caDSR
+      Value: caDSR Name Error
+      Version: 1
+    Type: int
+  taxon:
+    Desc: text
+    Req: 'No'
+    Term:
+    - Code: 10543100
+      Origin: caDSR
+      Value: caDSR Name Error
+      Version: 2
+    Type: code
+  therapy_indicator:
+    Desc: text
+    Req: 'No'
+    Term:
+    - Code: 14713318
+      Origin: caDSR
+      Value: Therapeutic Procedure Performed Indicator
+      Version: 1
+    Type: code
+  tissue_disease_status:
+    Desc: text
+    Req: 'No'
+    Type: code
+  tissue_or_organ_of_origin:
+    Desc: text
+    Req: 'No'
+    Type: code
+  type:
+    Desc: text
+    Req: 'No'
+    Type: code
+  uberon_specimen_anatomic_site:
+    Desc: text
+    Req: 'No'
+    Term:
+    - Code: 12083894
+      Origin: caDSR
+      Value: Specimen Original Anatomic Site Uberon Identifier
+    Type: code
+  vital_status:
+    Desc: text
+    Req: 'No'
+    Term:
+    - Code: 2847330
+      Origin: caDSR
+      Value: Participant Vital Status Type
+      Version: 1
+    Type: code
+  year_of_birth:
+    Desc: text
+    Req: 'No'
+    Type: date
