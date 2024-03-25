@@ -119,15 +119,8 @@ def main(args):
                                 cdeid = str(cdeid)
                                 if hasNubmers(cdeid):
                                     version = cleanline(entry['Version'])
-                                    #This if statment is because of the nasty habit of some modelers to use "code ID" as a placeholder
-                                    if cdeid not in ['code ID']:
-                                        #CDE ID
-                                        #line[codemapdict['x']] = cleanline(entry['Code'])
-                                        line[codemapdict['x']] = cdeid
-                                        line[codemapdict['y']] = version
-                                    else:
-                                        #Element Mapping Group (Optional if no CDE is associated)
-                                        line[codemapdict['z']] = node
+                                    line[codemapdict['x']] = cdeid
+                                    line[codemapdict['y']] = version
                                 else:
                                     line[codemapdict['z']] = node
                             else:
