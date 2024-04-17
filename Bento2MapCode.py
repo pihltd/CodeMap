@@ -66,21 +66,46 @@ def getCDEInfo(publicID):
     cdeinfo = cderes.json()
     return cdeinfo
 
+def versionSlap(version):
+    #Do different things if version is a string or an int
+    if type(version) == str:
+        if '.' in version:
+            versionlist = version.split(".")
+            version = versionlist[0]
+            version = float(version)
+        elif ' ' in version:
+            versionlist = version.split(" ")
+            version = versionlist[0]
+            version = float(version)
+    else:
+        version = float(version)
+    version = str(round(version,2))
+    return version
+
+
 def main(args):
+    #Read the configuration files
     configs = readConfigs(args.configfile)
+    #Get the column names that are used by CodeMap in dictionary form
     codemapdict = configs['headers']
     
+    #Create a list of the CodeMap headers.  Used later to create headers in the CodeMap file
     codemapfields = []
     for key, value in codemapdict.items():
         codemapfields.append(value)
+
+    #Set up the list that will be used to store all of the reformatted data. 
     datalist = []
 
-    
+    #Read the MDF model file and MDF property file into dictionaries.  Locations for MDF are from the config file.
     modeldict = parseMDF(configs['scriptinfo']['modelfile'],"model")
     propdict = parseMDF(configs['scriptinfo']['propsfile'], "props")
 
+    # Index is used in the Seq ID columns and starts with 1
     index = 1
+    #Using the model dictionary, work through each property for each node and transform it into CodeMap format
     for node, properties in modeldict.items():
+        #Create a line and poulate the constants
         line = lineSet(node, configs, codemapdict)
         #properties['Props'] can be null
         if properties['Props'] is not None:
@@ -101,6 +126,7 @@ def main(args):
                         if isinstance(propdict[propname]['Type'],str):
                             #Characteristic Type
                             line[codemapdict['s']] = cleanline(propdict[propname]['Type'])
+                    #Handling the mess around "Required" in MDF files. 
                     if "Req" in propdict[propname]:
                         req = propdict[propname]['Req']
                         if isinstance(req, bool):
@@ -109,6 +135,7 @@ def main(args):
                             req = None
                             #Characteristic Mandatory
                         line[codemapdict['u']] = req
+                    # The Term section of an MDF property file is where thngs like the CDE ID and version live.
                     if "Term" in propdict[propname]:
                         #This gets a little funky as Term is a list of dictionary
                         for entry in propdict[propname]['Term']:
@@ -119,6 +146,8 @@ def main(args):
                                 cdeid = str(cdeid)
                                 if hasNubmers(cdeid):
                                     version = cleanline(entry['Version'])
+                                    #CodeMap is REALLY picky about represnting the version number, versionSlap formats it correctly regardless of how it starts
+                                    version = versionSlap(version)
                                     line[codemapdict['x']] = cdeid
                                     line[codemapdict['y']] = version
                                 else:
@@ -146,7 +175,6 @@ def main(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-c", "--configfile", required=True,  help="Configuration file containing all the input info")
-    #parser.add_argument("-a", "--addcdeinfo", help="Add additionl information about the CDEs")
 
     args = parser.parse_args()
 

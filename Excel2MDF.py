@@ -6,6 +6,11 @@ import requests
 import json
 import pprint
 
+def readConfigs(yamlfile):
+    with open(yamlfile) as f:
+        configs = yaml.load(f, Loader=yaml.FullLoader)
+    return configs
+
 def readExcel(filename, sheetname):
     exeldf = pd.read_excel(filename, sheet_name=sheetname)
     return exeldf
@@ -65,7 +70,7 @@ def makePropFile(xldf):
             nodejson = {}
             nodejson = parseRow(row)
             propertyname = row['Attribute Name']
-            cdedescription = "Text"
+            cdedefinition = "Text"
             #Need to handle with and without CDE separately since with CDE has 3 lines
             if row['Tag Name'] in ('caDSR CDE ID', ' '):
                 if row['Tag Name'] == 'caDSR CDE ID':
@@ -75,12 +80,16 @@ def makePropFile(xldf):
                     temp['Code'] = int(row['Tag Value'])
                     cdename, cdedefinition = getCDEName(row['Tag Value'],1)
                     temp['Value'] = cdename
+                    #This is where things get funky.  The version should be in the Tag Value column that is two rows later
+                    newrowindex = index + 2
+                    versionrow = xldf.iloc[newrowindex]
+                    temp['Version'] = versionrow['Tag Value']
                     nodejson['Term'].append(temp)
                 propjson['PropDefinitions'][propertyname] = nodejson
                 propjson['PropDefinitions'][propertyname]['Desc'] = cdedefinition
 
     propjson['Handle'] = 'CRDC Search'
-    propjson['Version'] = '1'
+    propjson['Version'] = '1.10'
     return propjson
 
 def updateVersion(jsonthing, xldf):
@@ -102,25 +111,27 @@ def writeYAML(filename, jsonthing):
     f.close()
 
 def main(args):
+    #Read the configs
+    configs = readConfigs(args.config)
     #Read the Excel file into a dataframe
-    xldf = readExcel(args.excelfile, args.sheetname)
+    #xldf = readExcel(args.excelfile, args.sheetname)
+    xldf = readExcel(configs['excelfile'], configs['worksheet'])
     #Create the MDF Model file and write 
     modeljson = makeModelFile(xldf)
-    writeYAML(args.mdffile, modeljson)
+    #writeYAML(args.mdffile, modeljson)
+    writeYAML(configs['mdffile'], modeljson)
     #Create the MDF Property file and write
     propjson = makePropFile(xldf)
     propjson = updateVersion(propjson, xldf)
-    writeYAML(args.propfile, propjson)
+    #writeYAML(args.propfile, propjson)
+    writeYAML(configs['mdfprops'], propjson)
 
 
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("-x", "--excelfile", required=True, help="CRDC XLSX model file")
-    parser.add_argument("-s", "--sheetname", required=True, help="Sheet name from XLSX file")
-    parser.add_argument("-m", "--mdffile", required=True, help="Output MDF model file")
-    parser.add_argument("-p", "--propfile", required=True, help="Output MDF Property file")
+    parser.add_argument("-c", "--config", required=True, help="Configuration file to convert CRDS Search XLS file to MDF")
 
     args = parser.parse_args()
 
