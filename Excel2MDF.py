@@ -36,6 +36,9 @@ def getCDEName(cdeid, version):
         cdename = 'caDSR Name Error'
     return cdename, definition
 
+#def relType(attribute, target):
+
+
 def makeModelFile(xldf):
     modeljson = {}
     nodejson = {}
@@ -58,10 +61,43 @@ def makeModelFile(xldf):
             nodejson[node]['Text'] = 'text'
             nodejson[node]['Tags'] = {'Category':'value', 'Assignment':'value', 'Class':'value', 'Template':'Yes'}
 
+    #Step 4: Build out the node relationships
+    #relation_df = xldf.query('Object_Type == "Association"')
+    #relationjson = {}
+    #for index, row in relation_df.iterrows():
+    #    print(f"Source Cardinality: {row['Source_Card']}")
+    #    print(type(row['Source_Card']))
+        #if row['Source_Card'] is not None:
+        #    relation = relType(row['Attribute_Card'], row['Source_Card'])
+
+
+    rel_df = xldf.query('Object_Type =="Association"')
+    relterms = {"0..*":"many", "1..*":"one", "1":"one", "0..1":"one", 1:"one"}
+    reljson = {}
+    for index, row in rel_df.iterrows():
+        if row['Source_Card'] not in ('', ' '):
+            source = row['Class_Name']
+            target = row['Target_Class']
+            sourceCard = row['Source_Card']
+            targetCard = row['Destination_Card']
+            relstring = relterms[sourceCard]+"_to_"+relterms[targetCard]
+            labelstring = "of_"+source
+            if labelstring in reljson:
+                reljson[labelstring]['Ends'].append({'Src':source, 'Dst':target})
+            else:
+                temp = {}
+                temp['Mul'] = relstring
+                temp['Ends'] = [{'Src':source, 'Dst':target}]
+                reljson[labelstring] = temp
+
+            #print(f"Source: {sourceCard}\tTarget: {targetCard}")
+            #print(relstring)
+
     #Step 4, build the final json
     modeljson['Nodes'] = nodejson
     modeljson['Handle'] = 'CRDC Search'
-    modeljson['Version'] = "1"
+    modeljson['Version'] = "0.1"
+    modeljson['Relationships'] = reljson
     return modeljson
 
 def parseRow(row):
