@@ -61,16 +61,7 @@ def makeModelFile(xldf):
             nodejson[node]['Text'] = 'text'
             nodejson[node]['Tags'] = {'Category':'value', 'Assignment':'value', 'Class':'value', 'Template':'Yes'}
 
-    #Step 4: Build out the node relationships
-    #relation_df = xldf.query('Object_Type == "Association"')
-    #relationjson = {}
-    #for index, row in relation_df.iterrows():
-    #    print(f"Source Cardinality: {row['Source_Card']}")
-    #    print(type(row['Source_Card']))
-        #if row['Source_Card'] is not None:
-        #    relation = relType(row['Attribute_Card'], row['Source_Card'])
-
-
+    #Step 4, build the class/node relationships
     rel_df = xldf.query('Object_Type =="Association"')
     relterms = {"0..*":"many", "1..*":"one", "1":"one", "0..1":"one", 1:"one"}
     reljson = {}
@@ -80,18 +71,22 @@ def makeModelFile(xldf):
             target = row['Target_Class']
             sourceCard = row['Source_Card']
             targetCard = row['Destination_Card']
-            relstring = relterms[sourceCard]+"_to_"+relterms[targetCard]
-            labelstring = "of_"+source
+            #relstring = relterms[sourceCard]+"_to_"+relterms[targetCard]
+            relstring = relterms[targetCard]+"_to_"+relterms[sourceCard]
+            #There are sometimes relationship names in the Association name column.  Use if there
+            if row['Association_Name'] not in ('',' '):
+                labelstring = row['Association_Name']
+            else:
+                labelstring = "of_"+source
             if labelstring in reljson:
-                reljson[labelstring]['Ends'].append({'Src':source, 'Dst':target})
+                #reljson[labelstring]['Ends'].append({'Src':source, 'Dst':target})
+                reljson[labelstring]['Ends'].append({'Src':target, 'Dst':source})
             else:
                 temp = {}
                 temp['Mul'] = relstring
-                temp['Ends'] = [{'Src':source, 'Dst':target}]
+                #temp['Ends'] = [{'Src':source, 'Dst':target}]
+                temp['Ends'] = [{'Src':target, 'Dst':source}]
                 reljson[labelstring] = temp
-
-            #print(f"Source: {sourceCard}\tTarget: {targetCard}")
-            #print(relstring)
 
     #Step 4, build the final json
     modeljson['Nodes'] = nodejson
