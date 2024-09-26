@@ -5,6 +5,7 @@ import argparse
 import requests
 import json
 import pprint
+import re
 
 def readConfigs(yamlfile):
     with open(yamlfile) as f:
@@ -14,6 +15,15 @@ def readConfigs(yamlfile):
 def readExcel(filename, sheetname):
     exeldf = pd.read_excel(filename, sheet_name=sheetname)
     return exeldf
+
+def cleanString(inputstring, description):
+    if description:
+        outputstring = re.sub(r'[\n\r\t?]+', '', inputstring)
+        outputstring.rstrip()
+    else:
+        outputstring = re.sub(r'[\W]+', '', inputstring)
+    
+    return outputstring
 
 def getCDEName(cdeid, version):
     url = "https://cadsrapi.cancer.gov/rad/NCIAPI/1.0/api/DataElement/"+str(cdeid)+"?version="+str(version)
@@ -34,9 +44,23 @@ def getCDEName(cdeid, version):
             definition = results['DataElement']['definition']
     else:
         cdename = 'caDSR Name Error'
+    definition = cleanString(definition, True)
     return cdename, definition
 
-#def relType(attribute, target):
+def getCDEInfoFromExcel(attclass, attribute, df):
+    newdf = df.loc[(df['Class_Name'] == attclass) & (df['Attribute_Name'] == attribute)]
+    cdeid = None
+    version = None
+    url = None
+    for index, row in newdf.iterrows():
+        if row['Tag_Name'] == 'caDSR CDE ID':
+            cdeid = str(row['Tag_Value'])
+        elif row['Tag_Name'] == 'caDSR CDE Version':
+            version = str(row['Tag_Value'])
+        elif row['Tag_Name'] == 'caDSR CDE URL':
+            url = row['Tag_Value']
+    return cdeid, version, url
+
 
 
 def makeModelFile(xldf):
@@ -53,7 +77,9 @@ def makeModelFile(xldf):
     #Step 2, get the Attributes
     attribute_df = xldf.query('Object_Type == "Attribute"')
     for index, row in attribute_df.iterrows():
-        nodejson[row['Class_Name']]['Props'].append(row['Attribute_Name'])
+        attributename = row['Attribute_Name']
+        attributename = cleanString(attributename, False)
+        nodejson[row['Class_Name']]['Props'].append(attributename)
         #Step 3, Clue up duplicaiotns in the Props list
         for node,props in nodejson.items():
             dedupelist = list(set(props['Props']))
@@ -71,21 +97,20 @@ def makeModelFile(xldf):
             target = row['Target_Class']
             sourceCard = row['Source_Card']
             targetCard = row['Destination_Card']
-            #relstring = relterms[sourceCard]+"_to_"+relterms[targetCard]
             relstring = relterms[targetCard]+"_to_"+relterms[sourceCard]
             #There are sometimes relationship names in the Association name column.  Use if there
             if row['Association_Name'] not in ('',' '):
                 labelstring = row['Association_Name']
+                labelstring = labelstring.replace(" ","_")
             else:
                 labelstring = "of_"+source
             if labelstring in reljson:
-                #reljson[labelstring]['Ends'].append({'Src':source, 'Dst':target})
                 reljson[labelstring]['Ends'].append({'Src':target, 'Dst':source})
             else:
                 temp = {}
                 temp['Mul'] = relstring
-                #temp['Ends'] = [{'Src':source, 'Dst':target}]
                 temp['Ends'] = [{'Src':target, 'Dst':source}]
+                temp['Props'] = None
                 reljson[labelstring] = temp
 
     #Step 4, build the final json
@@ -112,39 +137,27 @@ def makePropFile(xldf):
             nodejson = {}
             nodejson = parseRow(row)
             propertyname = row['Attribute_Name']
+            propertyname = cleanString(propertyname, False)
+            classname = row['Class_Name']
+            classname = cleanString(classname, False)
+            cdeid, cdeversion, cdeurl = getCDEInfoFromExcel(classname, propertyname,xldf)
             cdedefinition = "Text"
-            #Need to handle with and without CDE separately since with CDE has 3 lines
-            if row['Tag_Name'] in ('caDSR CDE ID', ' '):
-                if row['Tag_Name'] == 'caDSR CDE ID':
-                    nodejson['Term'] = []
-                    temp = {}
-                    temp['Origin'] = 'caDSR'
-                    temp['Code'] = int(row['Tag_Value'])
-                    cdename, cdedefinition = getCDEName(row['Tag_Value'],1)
-                    temp['Value'] = cdename
-                    #This is where things get funky.  The version should be in the Tag Value column that is two rows later
-                    newrowindex = index + 2
-                    versionrow = xldf.iloc[newrowindex]
-                    temp['Version'] = versionrow['Tag_Value']
-                    nodejson['Term'].append(temp)
-                propjson['PropDefinitions'][propertyname] = nodejson
-                propjson['PropDefinitions'][propertyname]['Desc'] = cdedefinition
+            if cdeid is not None:
+                nodejson['Term'] = []
+                temp = {}
+                temp['Origin'] = 'caDSR'
+                temp['Code'] = cdeid
+                temp['Version'] = cdeversion
+                cdename, cdedefinition = getCDEName(cdeid, cdeversion)
+                temp['Value'] = cdename
+                nodejson['Term'].append(temp)
+            propjson['PropDefinitions'][propertyname] = nodejson
+            propjson['PropDefinitions'][propertyname]['Desc'] = cdedefinition
 
     propjson['Handle'] = 'CRDC Search'
     propjson['Version'] = '1.10'
     return propjson
-
-def updateVersion(jsonthing, xldf):
-    #In the Excel file, the version is a string that can look like a float.  This turns it to int.
-    for index, row in xldf.iterrows():
-        if row['Tag_Name'] == 'caDSR CDE Version':
-            version = row['Tag_Value']
-            if isinstance(version, str):
-                version = float(version)
-                version = int(version)
-            jsonthing['PropDefinitions'][row['Attribute_Name']]['Term'][0]['Version'] = version
-    return jsonthing
-        
+       
 
 
 def writeYAML(filename, jsonthing):
@@ -166,7 +179,7 @@ def main(args):
     #Create the MDF Model file and write 
     if args.verbose:
         print("Starting creation of modeljson")
-    modeljson = makeModelFile(xldf)      
+    modeljson = makeModelFile(xldf)
     if args.verbose:
         pprint.pprint(modeljson)
 
@@ -175,7 +188,6 @@ def main(args):
 
     #Create the MDF Property file and write
     propjson = makePropFile(xldf)
-    propjson = updateVersion(propjson, xldf)
 
     #writeYAML(args.propfile, propjson)
     writeYAML(configs['mdfprops'], propjson)
