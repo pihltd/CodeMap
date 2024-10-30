@@ -30,6 +30,41 @@ def readExcel(filename, sheetname):
     exeldf = pd.read_excel(filename, sheet_name=sheetname)
     return exeldf
 
+def getCDEName(cdeid, version):
+    #Safety valve if version is None
+    if version is None:
+        version = '1'
+    url = "https://cadsrapi.cancer.gov/rad/NCIAPI/1.0/api/DataElement/"+str(cdeid)+"?version="+str(version)
+    headers = {'accept':'application/json'}
+    try:
+        results = requests.get(url, headers = headers)
+    except requests.exceptions.HTTPError as e:
+        pprint.pprint(e)
+    if results.status_code == 200:
+        results = json.loads(results.content.decode())
+        #print(results['DataElement'])
+        if 'preferredName' in results['DataElement']:
+            cdename = results['DataElement']['preferredName']
+        else:
+            cdename = results['DataElement']['longName']
+        if 'preferredDefinition' in results['DataElement']:
+            definition = results['DataElement']['preferredDefinition']
+        else:
+            definition = results['DataElement']['definition']
+    else:
+        cdename = 'caDSR Name Error'
+    definition = cleanString(definition, True)
+    return cdename, definition
+
+def cleanString(inputstring, description):
+    if description:
+        outputstring = re.sub(r'[\n\r\t?]+', '', inputstring)
+        outputstring.rstrip()
+    else:
+        outputstring = re.sub(r'[\W]+', '', inputstring)
+    
+    return outputstring
+
 def addNodes(datamodel, df):
     nodelist = df['Class_Name'].unique()
     for node in nodelist:
@@ -68,7 +103,9 @@ def addTerm(datamodel, df):
                     cdever = temp[-1]
             elif 'URL' in row['Tag_Name']:
                 cdeurl = row['Tag_Value']
-        termvalues = {'handle': prop, 'value':prop, 'origin_version':cdever, 'origin_name':'caDSR', 'origin_id':cdeid, 'origin_defintion':cdeurl}
+        # Fetch the official CDE name and description from caDSR
+        cdename, description = getCDEName(cdeid, cdever)
+        termvalues = {'handle': prop, 'value':cdename, 'origin_version':cdever, 'origin_name':'caDSR', 'origin_id':cdeid, 'origin_definition': description, 'nanoid': cdeurl}
         termobj = Term(termvalues)
         propobj = datamodel.props[(node, prop)]
         datamodel.annotate(propobj, termobj)
@@ -105,12 +142,14 @@ def main(args):
         newmodel = addProp(newmodel, row)
 
     # Finally, add the Term section to any properties that have a CDE
-    #Build a df of properties that have a CDE
+    # Build a df of properties that have a CDE
     cde_df = excel_df[excel_df['Tag_Name'].str.contains('CDE')]
     newmodel = addTerm(newmodel, cde_df)
 
     #And even more finallly, add the relationships
     # For whatever reason, empty cells in Excel result in a space in pandas
+    # Note the the spreadsheet does mark Associations in the Object_Type row, but many of them are blank, so this looks for ones with an established relationship 
+    # Similarly, Association_Name is very sparse, so we build our own
     rel_df = excel_df[excel_df['Source_Card'] != " "]
     newmodel = addEdge(newmodel, rel_df)
 
@@ -154,12 +193,6 @@ def main(args):
             f.write("MODEL RELATIONSHIPS\n")
             for edge, value1, value2 in edges:
                 f.write(str(edges[(edge, value1, value2)].get_attr_dict())+"\n")
-        #print(nodes)
-        #print(type(nodes))
-        #for node, value in nodes.items():
-        #    print(f"Node:\t{node}\tNode type:\t{type(node)}")
-        #    print(f"Value:\t{value}\tValue type:\t{type(value)}")
-        #    pprint.pprint(nodes[node].props)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
