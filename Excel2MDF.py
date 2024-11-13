@@ -26,8 +26,14 @@ def cleanString(inputstring, description):
     return outputstring
 
 def getCDEName(cdeid, version):
-    url = "https://cadsrapi.cancer.gov/rad/NCIAPI/1.0/api/DataElement/"+str(cdeid)+"?version="+str(version)
+    if version is None:
+        url = "https://cadsrapi.cancer.gov/rad/NCIAPI/1.0/api/DataElement/"+str(cdeid)
+    elif 'http' in version:
+        url = "https://cadsrapi.cancer.gov/rad/NCIAPI/1.0/api/DataElement/"+str(cdeid)
+    else:
+        url = "https://cadsrapi.cancer.gov/rad/NCIAPI/1.0/api/DataElement/"+str(cdeid)+"?version="+str(version)
     headers = {'accept':'application/json'}
+    print(url)
     try:
         results = requests.get(url, headers = headers)
     except requests.exceptions.HTTPError as e:
@@ -63,7 +69,7 @@ def getCDEInfoFromExcel(attclass, attribute, df):
 
 
 
-def makeModelFile(xldf):
+def makeModelFile(xldf, handle, version):
     modeljson = {}
     nodejson = {}
 
@@ -115,8 +121,8 @@ def makeModelFile(xldf):
 
     #Step 4, build the final json
     modeljson['Nodes'] = nodejson
-    modeljson['Handle'] = 'CRDC Search'
-    modeljson['Version'] = "0.1"
+    modeljson['Handle'] = handle
+    modeljson['Version'] = version
     modeljson['Relationships'] = reljson
     return modeljson
 
@@ -128,19 +134,24 @@ def parseRow(row):
     rowjson['Req'] = 'No'
     return rowjson
 
-def makePropFile(xldf):
+def makePropFile(xldf, handle, version):
     propjson = {}
     propjson['PropDefinitions'] = {}
     
     for index, row in xldf.iterrows():
         if row['Object_Type'] == 'Attribute':
             nodejson = {}
+            #If the data type is enum, it's in the "Type" field from parseRow
             nodejson = parseRow(row)
             propertyname = row['Attribute_Name']
             propertyname = cleanString(propertyname, False)
             classname = row['Class_Name']
             classname = cleanString(classname, False)
             cdeid, cdeversion, cdeurl = getCDEInfoFromExcel(classname, propertyname,xldf)
+            if nodejson['Type'] == 'enum':
+                nodejson['Enum'] = [cdeurl]
+                #Look into pulling a type from the CDE API
+                nodejson['Type'] = None
             cdedefinition = "Text"
             if cdeid is not None:
                 nodejson['Term'] = []
@@ -154,8 +165,8 @@ def makePropFile(xldf):
             propjson['PropDefinitions'][propertyname] = nodejson
             propjson['PropDefinitions'][propertyname]['Desc'] = cdedefinition
 
-    propjson['Handle'] = 'CRDC Search'
-    propjson['Version'] = '1.10'
+    propjson['Handle'] = handle
+    propjson['Version'] = version
     return propjson
        
 
@@ -179,7 +190,7 @@ def main(args):
     #Create the MDF Model file and write 
     if args.verbose:
         print("Starting creation of modeljson")
-    modeljson = makeModelFile(xldf)
+    modeljson = makeModelFile(xldf, configs['modelHandle'], configs['modelVersion'])
     if args.verbose:
         pprint.pprint(modeljson)
 
@@ -187,7 +198,7 @@ def main(args):
     writeYAML(configs['mdffile'], modeljson)
 
     #Create the MDF Property file and write
-    propjson = makePropFile(xldf)
+    propjson = makePropFile(xldf, configs['modelHandle'], configs['modelVersion'])
 
     #writeYAML(args.propfile, propjson)
     writeYAML(configs['mdfprops'], propjson)

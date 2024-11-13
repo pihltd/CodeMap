@@ -1,4 +1,6 @@
-"excelfile": "/media/vmshare/CRDC Submission Model Custom Report_20240910.xlsx"
-"worksheet": "CRDC Submission Model Rpt-0910"
-"mdffile" : "/home/pihl/models/crdc/CRDC_Submission_MDF.yml"
-"mdfprops" : "/home/pihl/models/crdc/CRDC_Submission_MDF_Props.yml"
+"excelfile": 'C:\\Users\\pihltd\Documents\\VMShare\\CRDC Submission Model Custom Report_20240926.xlsx'
+"worksheet": "CRDC SubModelCustomRpt_09262024"
+"mdffile" : 'C:\\Users\\pihltd\\Documents\\modeltest\\CRDC_Submission_MDF.yml'
+"mdfprops" : 'C:\\Users\\pihltd\\Documents\\modeltest\\CRDC_Submission_MDF_Props.yml'
+"modelHandle": "CRDC_Submission"
+"modelVersion": "0.1"
