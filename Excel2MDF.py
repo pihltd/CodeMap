@@ -1,56 +1,25 @@
 #Convert the CRDC Search Excel file to an MDF format file.
+import CRDCStuff as crdc
 import pandas as pd
 import yaml
 import argparse
-import requests
-import json
 import pprint
-import re
-
-def readConfigs(yamlfile):
-    with open(yamlfile) as f:
-        configs = yaml.load(f, Loader=yaml.FullLoader)
-    return configs
 
 def readExcel(filename, sheetname):
     exeldf = pd.read_excel(filename, sheet_name=sheetname)
     return exeldf
 
-def cleanString(inputstring, description):
-    if description:
-        outputstring = re.sub(r'[\n\r\t?]+', '', inputstring)
-        outputstring.rstrip()
-    else:
-        outputstring = re.sub(r'[\W]+', '', inputstring)
-    
-    return outputstring
-
 def getCDEName(cdeid, version):
-    if version is None:
-        url = "https://cadsrapi.cancer.gov/rad/NCIAPI/1.0/api/DataElement/"+str(cdeid)
-    elif 'http' in version:
-        url = "https://cadsrapi.cancer.gov/rad/NCIAPI/1.0/api/DataElement/"+str(cdeid)
+    results = crdc.getCDERecord(cdeid, version)
+    if 'preferredName' in results['DataElement']:
+        cdename = results['DataElement']['preferredName']
     else:
-        url = "https://cadsrapi.cancer.gov/rad/NCIAPI/1.0/api/DataElement/"+str(cdeid)+"?version="+str(version)
-    headers = {'accept':'application/json'}
-    print(url)
-    try:
-        results = requests.get(url, headers = headers)
-    except requests.exceptions.HTTPError as e:
-        pprint.pprint(e)
-    if results.status_code == 200:
-        results = json.loads(results.content.decode())
-        if 'preferredName' in results['DataElement']:
-            cdename = results['DataElement']['preferredName']
-        else:
-            cdename = results['DataElement']['longName']
-        if 'preferredDefinition' in results['DataElement']:
-            definition = results['DataElement']['preferredDefinition']
-        else:
-            definition = results['DataElement']['definition']
+        cdename = results['DataElement']['longName']
+    if 'preferredDefinition' in results['DataElement']:
+        definition = results['DataElement']['preferredDefinition']
     else:
-        cdename = 'caDSR Name Error'
-    definition = cleanString(definition, True)
+        definition = results['DataElement']['definition']
+    definition = crdc.cleanString(definition, True)
     return cdename, definition
 
 def getCDEInfoFromExcel(attclass, attribute, df):
@@ -84,7 +53,7 @@ def makeModelFile(xldf, handle, version):
     attribute_df = xldf.query('Object_Type == "Attribute"')
     for index, row in attribute_df.iterrows():
         attributename = row['Attribute_Name']
-        attributename = cleanString(attributename, False)
+        attributename = crdc.cleanString(attributename, False)
         nodejson[row['Class_Name']]['Props'].append(attributename)
         #Step 3, Clue up duplicaiotns in the Props list
         for node,props in nodejson.items():
@@ -135,52 +104,61 @@ def parseRow(row):
     return rowjson
 
 def makePropFile(xldf, handle, version):
+    attr_df = xldf.loc[xldf['Object_Type'] == 'Attribute']
     propjson = {}
     propjson['PropDefinitions'] = {}
     
-    for index, row in xldf.iterrows():
-        if row['Object_Type'] == 'Attribute':
-            nodejson = {}
-            #If the data type is enum, it's in the "Type" field from parseRow
-            nodejson = parseRow(row)
-            propertyname = row['Attribute_Name']
-            propertyname = cleanString(propertyname, False)
-            classname = row['Class_Name']
-            classname = cleanString(classname, False)
-            cdeid, cdeversion, cdeurl = getCDEInfoFromExcel(classname, propertyname,xldf)
-            if nodejson['Type'] == 'enum':
-                nodejson['Enum'] = [cdeurl]
-                #Look into pulling a type from the CDE API
-                nodejson['Type'] = None
-            cdedefinition = "Text"
-            if cdeid is not None:
-                nodejson['Term'] = []
-                temp = {}
-                temp['Origin'] = 'caDSR'
-                temp['Code'] = cdeid
-                temp['Version'] = cdeversion
-                cdename, cdedefinition = getCDEName(cdeid, cdeversion)
-                temp['Value'] = cdename
-                nodejson['Term'].append(temp)
-            propjson['PropDefinitions'][propertyname] = nodejson
-            propjson['PropDefinitions'][propertyname]['Desc'] = cdedefinition
-
+    attr_list = attr_df['Attribute_Name'].unique()
+    for attr in attr_list:
+        temp_df = attr_df.loc[attr_df['Attribute_Name'] == attr]
+        nodejson = {}
+        nodejson = parseRow(temp_df.iloc[0])
+        propertyname = temp_df['Attribute_Name'].iloc[0]
+        propertyname = crdc.cleanString(propertyname, False)
+        classname = temp_df['Class_Name'].iloc[0]
+        classname = crdc.cleanString(classname, False)
+        cdeid, cdeversion, cdeurl = getCDEInfoFromExcel(classname, propertyname,temp_df)
+        if cdeversion is not None:
+            if 'http' in cdeversion:
+                cdeversion = None
+        if nodejson['Type'] == 'enum':
+            if cdeversion is None:
+                apiurl = f"https://cadsrapi.cancer.gov/rad/NCIAPI/1.0/api/DataElement/{cdeid}"
+            else:
+                apiurl = f"https://cadsrapi.cancer.gov/rad/NCIAPI/1.0/api/DataElement/{cdeid}?version={cdeversion}"
+            nodejson['Enum'] = [cdeurl, apiurl]
+            #Look into pulling a type from the CDE API
+            nodejson['Type'] = None
+        cdedefinition = "Text"
+            
+        if cdeid is not None:
+            nodejson['Term'] = []
+            temp = {}
+            temp['Origin'] = 'caDSR'
+            temp['Code'] = cdeid
+            temp['Version'] = cdeversion
+            cdename, cdedefinition = getCDEName(cdeid, cdeversion)
+            temp['Value'] = cdename
+            nodejson['Term'].append(temp)
+        propjson['PropDefinitions'][propertyname] = nodejson
+        propjson['PropDefinitions'][propertyname]['Desc'] = cdedefinition
+            
     propjson['Handle'] = handle
     propjson['Version'] = version
     return propjson
-       
 
 
-def writeYAML(filename, jsonthing):
-    with open(filename, 'w') as f:
-        yaml.dump(jsonthing, f)
-    f.close()
+#def writeYAML(filename, jsonthing):
+#    with open(filename, 'w') as f:
+#        yaml.dump(jsonthing, f)
+#    f.close()
 
 def main(args):
     #Read the configs
     if args.verbose:
         print("Starting to read config file")
-    configs = readConfigs(args.config)
+    #configs = readConfigs(args.config)
+    configs = crdc.readYAML(args.config)
 
     #Read the Excel file into a dataframe
     if args.verbose:
@@ -195,13 +173,13 @@ def main(args):
         pprint.pprint(modeljson)
 
     #writeYAML(args.mdffile, modeljson)
-    writeYAML(configs['mdffile'], modeljson)
+    crdc.writeYAML(configs['mdffile'], modeljson)
 
     #Create the MDF Property file and write
     propjson = makePropFile(xldf, configs['modelHandle'], configs['modelVersion'])
 
     #writeYAML(args.propfile, propjson)
-    writeYAML(configs['mdfprops'], propjson)
+    crdc.writeYAML(configs['mdfprops'], propjson)
 
 
 
