@@ -1,7 +1,6 @@
 #Convert the CRDC Search Excel file to an MDF format file.
 import CRDCStuff as crdc
 import pandas as pd
-import yaml
 import argparse
 import pprint
 
@@ -122,11 +121,13 @@ def makePropFile(xldf, handle, version):
             if 'http' in cdeversion:
                 cdeversion = None
         if nodejson['Type'] == 'enum':
-            if cdeversion is None:
-                apiurl = f"https://cadsrapi.cancer.gov/rad/NCIAPI/1.0/api/DataElement/{cdeid}"
-            else:
-                apiurl = f"https://cadsrapi.cancer.gov/rad/NCIAPI/1.0/api/DataElement/{cdeid}?version={cdeversion}"
-            nodejson['Enum'] = [cdeurl, apiurl]
+            if cdeid is not None:
+                if cdeversion is None:
+                    apiurl = f"https://cadsrapi.cancer.gov/invoke/caDSR/GetJSON?query=DataElement[@publicId={cdeversion}]"
+                else:
+                    apiurl = f"https://cadsrapi.cancer.gov/invoke/caDSR/GetJSON?query=DataElement[@publicId={cdeid},@version={cdeversion}]"
+                nodejson['Enum'] = [cdeurl, apiurl]
+            #nodejson['Enum'] = [cdeurl]
             #Look into pulling a type from the CDE API
             nodejson['Type'] = None
         cdedefinition = "Text"
