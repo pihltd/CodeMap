@@ -12,58 +12,29 @@ Model.rm_term(term: Term)
 
 #Convert the CRDC Search Excel file to an MDF format file using the bento-mdf library
 import pandas as pd
-import yaml
 import argparse
-import requests
-import json
-import pprint
-import re
+from crdclib import crdclib as crdc
 from bento_meta.model import Model, Node, Property, Term, Edge
 from bento_mdf.mdf import MDF
-
-def readConfigs(yamlfile):
-    with open(yamlfile) as f:
-        configs = yaml.load(f, Loader=yaml.FullLoader)
-    return configs
 
 def readExcel(filename, sheetname):
     exeldf = pd.read_excel(filename, sheet_name=sheetname)
     return exeldf
 
+
 def getCDEName(cdeid, version):
-    #Safety valve if version is None
-    if version is None:
-        version = '1'
-    url = "https://cadsrapi.cancer.gov/rad/NCIAPI/1.0/api/DataElement/"+str(cdeid)+"?version="+str(version)
-    headers = {'accept':'application/json'}
-    try:
-        results = requests.get(url, headers = headers)
-    except requests.exceptions.HTTPError as e:
-        pprint.pprint(e)
-    if results.status_code == 200:
-        results = json.loads(results.content.decode())
-        #print(results['DataElement'])
-        if 'preferredName' in results['DataElement']:
-            cdename = results['DataElement']['preferredName']
-        else:
-            cdename = results['DataElement']['longName']
-        if 'preferredDefinition' in results['DataElement']:
-            definition = results['DataElement']['preferredDefinition']
-        else:
-            definition = results['DataElement']['definition']
+    results = crdc.getCDERecord(cdeid, version)
+    if 'preferredName' in results['DataElement']:
+        cdename = results['DataElement']['preferredName']
     else:
-        cdename = 'caDSR Name Error'
-    definition = cleanString(definition, True)
+        cdename = results['DataElement']['longName']
+    if 'preferredDefinition' in results['DataElement']:
+        definition = results['DataElement']['preferredDefinition']
+    else:
+        definition = results['DataElement']['definition']
+    definition = crdc.cleanString(definition, True)
     return cdename, definition
 
-def cleanString(inputstring, description):
-    if description:
-        outputstring = re.sub(r'[\n\r\t?]+', '', inputstring)
-        outputstring.rstrip()
-    else:
-        outputstring = re.sub(r'[\W]+', '', inputstring)
-    
-    return outputstring
 
 def addNodes(datamodel, df):
     nodelist = df['Class_Name'].unique()
@@ -71,6 +42,7 @@ def addNodes(datamodel, df):
         nodeobj = Node({'handle': node})
         datamodel.add_node(nodeobj)
     return datamodel
+
 
 def addProp(datamodel, df_row):
     nodename = df_row['Class_Name']
@@ -85,6 +57,7 @@ def addProp(datamodel, df_row):
         propobj = Property({'handle': propname, "_parent_handle": nodename, 'is_required': 'No', 'value_domain': datatype})
         datamodel.add_prop(nodeobj, propobj)
     return datamodel
+
 
 def addTerm(datamodel, df):
     #Note that this assumes all entires in the df have a CDE
@@ -111,6 +84,7 @@ def addTerm(datamodel, df):
         datamodel.annotate(propobj, termobj)
     return datamodel
 
+
 def addEdge(datamodel, edge_df):
     relterms = {"0..*":"many", "1..*":"one", "1":"one", "0..1":"one", 1:"one"}
     for item, row in edge_df.iterrows():
@@ -128,7 +102,7 @@ def addEdge(datamodel, edge_df):
 
 
 def main(args):
-    configs = readConfigs(args.config)
+    configs = crdc.readYAML(args.config)
     excel_df = readExcel(configs['excelfile'], configs['worksheet'])
 
     newmodel = Model(handle="CRDCSubmission")

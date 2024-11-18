@@ -1,5 +1,5 @@
 #Convert the CRDC Search Excel file to an MDF format file.
-import CRDCStuff as crdc
+from crdclib import crdclib as crdc
 import pandas as pd
 import argparse
 import pprint
@@ -148,17 +148,10 @@ def makePropFile(xldf, handle, version):
     propjson['Version'] = version
     return propjson
 
-
-#def writeYAML(filename, jsonthing):
-#    with open(filename, 'w') as f:
-#        yaml.dump(jsonthing, f)
-#    f.close()
-
 def main(args):
     #Read the configs
     if args.verbose:
         print("Starting to read config file")
-    #configs = readConfigs(args.config)
     configs = crdc.readYAML(args.config)
 
     #Read the Excel file into a dataframe
