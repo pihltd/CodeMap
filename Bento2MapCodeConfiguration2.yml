@@ -1,14 +1,18 @@
 "modelinfo":
   "b": "pihl"
-  "c": "CRDC Batch 2"
-  "e": "CRDC Search"
+  "c": "CDS Batch 1"
+  "e": "CDS"
   "g": "1.0"
   "k": "Node"
   "p": "Property"
+"mdffiles":
+  - 'C:\Users\pihltd\Documents\modeltest\cds-model-props.yml'
+  - 'C:\Users\pihltd\Documents\modeltest\cds-model.yml'
+"outputfile": 'C:\Users\pihltd\Documents\modeltest\ConfigOutput.csv'
 "scriptinfo":
-  "propsfile": "CRDCProps.yml"
-  "modelfile": "CRDC.yml"
-  "outputfile": "ConfigOutput.csv"
+  "propsfile": 'C:\Users\pihltd\Documents\modeltest\cds-model-props.yml'
+  "modelfile": 'C:\Users\pihltd\Documents\modeltest\cds-model.yml'
+  "outputfile": 'C:\Users\pihltd\Documents\modeltest\ConfigOldOutput.csv'
 "headers":
   "a": "DO NOT USE"
   "b": "Batch User"
