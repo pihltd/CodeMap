@@ -27,7 +27,6 @@ def main(args):
     # Element == Node, Characteristic == Property
     for node, prop in proplist:
         propdict = props[(node,prop)].get_attr_dict()
-        #print (propdict)
         loadline = {}
         #Constants
         for key, value in configs['modelinfo'].items():
@@ -44,7 +43,7 @@ def main(args):
         #Characteristic Physical Name
         loadline[codemapdict['m']] = prop
         #Characteristic Description
-        loadline[codemapdict['o']] = crdc.cleanString(propdict['desc'])
+        loadline[codemapdict['o']] = crdc.cleanString(propdict['desc'], True)
         #Characteristic Type
         loadline[codemapdict['s']] = propdict['value_domain']
         #Characteristic Mandatory
@@ -56,8 +55,8 @@ def main(args):
             loadline[codemapdict['u']] = propdict['is_required']
         if mdfmodel.model.props[node,prop].concept is not None: 
             #Propterm is a dictionary with a tuple of term name and source as key, and the term object as the value
-            propterms = mdfmodel.model.props[node,prop].concept.terms
-            for key, termobject in propterms.items():
+            propterms = mdfmodel.model.props[(node,prop)].concept.terms
+            for termsourcekey, termobject in propterms.items():
                 termdict = termobject.get_attr_dict()
                 # CDE ID
                 loadline[codemapdict['x']] = termdict['origin_id']
