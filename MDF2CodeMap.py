@@ -56,7 +56,7 @@ def main(args):
         if mdfmodel.model.props[node,prop].concept is not None: 
             #Propterm is a dictionary with a tuple of term name and source as key, and the term object as the value
             propterms = mdfmodel.model.props[(node,prop)].concept.terms
-            for termsourcekey, termobject in propterms.items():
+            for termobject in propterms.values():
                 termdict = termobject.get_attr_dict()
                 # CDE ID
                 loadline[codemapdict['x']] = termdict['origin_id']
