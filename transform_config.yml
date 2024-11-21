@@ -1,0 +1,6 @@
+property_mapping: 'C:\Users\pihltd\Documents\modeltest\CCDI_to_CDS_manual_Conf_Char_Map.xls.xlsx'
+property_tab: 'CCDI_to_CDS_manual_Conf_Char_Ma'
+value_mapping: 'C:\Users\pihltd\Documents\modeltest\CCDI_to_CDS_manual_Conf_Val_Map.xls.xlsx'
+value_tab: 'CCDI_to_CDS_manual_Conf_Val_Map'
+outputfile: 'C:\Users\pihltd\Documents\modeltest\CMCTOS_mapping.csv'
+drop_source_null: True
