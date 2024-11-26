@@ -1,6 +1,6 @@
-"excelfile": 'C:\\Users\\pihltd\Documents\\VMShare\\CRDC Submission Model Custom Report_20240926.xlsx'
-"worksheet": "CRDC SubModelCustomRpt_09262024"
-"mdffile" : 'C:\\Users\\pihltd\\Documents\\modeltest\\CRDC_Submission_MDF.yml'
-"mdfprops" : 'C:\\Users\\pihltd\\Documents\\modeltest\\CRDC_Submission_MDF_Props.yml'
+"excelfile": 'C:\Users\pihltd\Documents\VMShare\CRDC Submission Model Custom Report_20241125.xlsx'
+"worksheet": "CRDC SubModelCustomRpt_11252024"
+"mdffile" : 'C:\Users\pihltd\Documents\modeltest\CRDC_Submission_20241125_MDF.yml'
+"mdfprops" : 'C:\Users\pihltd\Documents\modeltest\CRDC_Submission_20241125_MDF_Props.yml'
 "modelHandle": "CRDC_Submission"
-"modelVersion": "0.1"
+"modelVersion": "0.2"

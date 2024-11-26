@@ -120,16 +120,27 @@ def makePropFile(xldf, handle, version):
         if cdeversion is not None:
             if 'http' in cdeversion:
                 cdeversion = None
-        if nodejson['Type'] == 'enum':
-            if cdeid is not None:
-                if cdeversion is None:
-                    apiurl = f"https://cadsrapi.cancer.gov/invoke/caDSR/GetJSON?query=DataElement[@publicId={cdeversion}]"
+        # So, Type and Enum are mutually exclusive.  You must have one, but not both.
+        # For CDEs without an ENUM, may want to look into pulling Type from caDSR
+        if 'Type' in nodejson:
+            if nodejson['Type'] == 'enum':
+                if cdeid is not None:
+                    if cdeversion is None:
+                        apiurl = f"https://cadsrapi.cancer.gov/invoke/caDSR/GetJSON?query=DataElement[@publicId={cdeversion}]"
+                    else:
+                        apiurl = f"https://cadsrapi.cancer.gov/invoke/caDSR/GetJSON?query=DataElement[@publicId={cdeid},@version={cdeversion}]"
+                    nodejson['Enum'] = [cdeurl, apiurl]
+                    nodejson.pop('Type', None)
                 else:
-                    apiurl = f"https://cadsrapi.cancer.gov/invoke/caDSR/GetJSON?query=DataElement[@publicId={cdeid},@version={cdeversion}]"
-                nodejson['Enum'] = [cdeurl, apiurl]
-            #nodejson['Enum'] = [cdeurl]
-            #Look into pulling a type from the CDE API
-            nodejson['Type'] = None
+                    nodejson['Type'] = "TBD"
+            elif nodejson['Type'] == "int":
+                nodejson['Type'] = "integer"
+            elif nodejson['Type'] == "date":
+                nodejson['Type'] = "datetime"
+            elif nodejson['Type'] not in ["integer", "string", "number", "datetime", "number_with_units"]:
+                nodejson['Type'] = "TBD"
+        else:
+            nodejson['Type'] = 'TBD'
         cdedefinition = "Text"
             
         if cdeid is not None:

@@ -1,0 +1,7 @@
+property_mapping: 'C:\Users\pihltd\Documents\modeltest\CCDI-HTAN\CCDI_to_HTAN_Conf_Char_Map.xls.xlsx'
+property_tab: 'CCDI_to_HTAN_Conf_Char_Map'
+value_mapping: '"C:\Users\pihltd\Documents\modeltest\CCDI-HTAN\CCDI_to_HTAN_Conf_Val_Map.xls.xlsx"'
+value_tab: 'CCDI_to_HTAN_Conf_Val_Map'
+outputfile: 'C:\Users\pihltd\Documents\modeltest\CCDI_HTAN_FULL_mapping.csv'
+drop_source_null: False
+include_model_names: True
