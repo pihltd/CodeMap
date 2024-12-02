@@ -10,15 +10,15 @@
 import pandas as pd
 import argparse
 import yaml
-import requests
-import json
+from crdclib import crdclib
 
-def readConfigs(yamlfile):
-    with open(yamlfile) as f:
-        configs = yaml.load(f, Loader=yaml.FullLoader)
-    return configs
+#def readConfigs(yamlfile):
+#    with open(yamlfile) as f:
+#        configs = yaml.load(f, Loader=yaml.FullLoader)
+#    return configs
 
 def parseModel(df, nodelist):
+    # TODO: Figure out how to handle attributes with no parent.
     finaljson = {"Handle":"HTAN"}
     workingjson = {}
     for node in nodelist:
@@ -28,6 +28,7 @@ def parseModel(df, nodelist):
         if len(attributes) >= 1:
             workingjson[node] = {"Props" : attributes}
     finaljson['Nodes'] = workingjson
+    finaljson['Relationships'] = None
     return finaljson
 
 def makeCleanList(string, delimiter):
@@ -35,24 +36,15 @@ def makeCleanList(string, delimiter):
     cleanlist = []
     for entry in workinglist:
         cleanlist.append(entry.strip())
+    #Remove duplications
+    cleanlist = list(set(cleanlist))
     return cleanlist
 
-def getCDEDef(cdeid, version):
-    url = "https://cadsrapi.cancer.gov/rad/NCIAPI/1.0/api/DataElement/"+str(cdeid)+"?version="+str(version)
-    headers = {'accept':'application/json'}
-    try:
-        results = requests.get(url, headers = headers)
-    except requests.exceptions.HTTPError as e:
-        pprint.pprint(e)
-    if results.status_code == 200:
-        results = json.loads(results.content.decode())
-        #cdename = results['DataElement']['preferredName']
-        definition = results['DataElement']['preferredName']
+def getCDEDef(jsonthing):
+    if jsonthing['status'] == "sucess":
+        return jsonthing['DataElement']['longName']
     else:
-        #cdename = 'caDSR Name Error'
-        definition = "caDSR Error"
-    #return cdename, definition
-    return definition
+        return f"No defintiion given with status {jsonthing['status']}"
 
 def parseProps(df):
     workingjson = {}
@@ -72,32 +64,51 @@ def parseProps(df):
                 linestuff = cdeline.split("=")
                 version = linestuff[3]
                 cdeid = linestuff[2].split("&")[0]
-                definition = getCDEDef(cdeid, version)
+                #definition = getCDEDef(cdeid, version)
+                cadsrjson = crdclib.getCDERecord(cdeid,version)
+                definition = getCDEDef(cadsrjson)
                 workingjson[prop]['Term'] =  [{"Code":cdeid, "Origin":"caDSR", "Value": definition, "Version":version}]
+            elif "gdc.cancer.gov" in cdeline:
+                workingjson[prop]['Term'] = [{"Code":cdeline, "Origin": "GDC", "Value": "Non caDSR entry", "Version": "Unknown"}]
+            elif "miti" in cdeline:
+                workingjson[prop]['Term'] = [{"Code":cdeline, "Origin": "MITI", "Value": "Non caDSR entry", "Version": "Unknown"}]
+            elif "purl.obolibrary.org" in cdeline:
+                workingjson[prop]['Term'] = [{"Code":cdeline, "Origin": "OBO", "Value": "Non caDSR entry", "Version": "Unknown"}]
+            elif "dataservice.datacommons.cancer.gov" in cdeline:
+                workingjson[prop]['Term'] = [{"Code":cdeline, "Origin": "CDS", "Value": "Non caDSR entry", "Version": "Unknown"}]
+            elif "google" in cdeline:
+                workingjson[prop]['Term'] = [{"Code":cdeline, "Origin": "HTAN", "Value": "Non caDSR entry", "Version": "Unknown"}]
+            elif "humancellatlas" in cdeline:
+                workingjson[prop]['Term'] = [{"Code":cdeline, "Origin": "HTAN", "Value": "Non caDSR entry", "Version": "Unknown"}]
+            else:
+                workingjson[prop]['Term'] = [{"Code":cdeline, "Origin": "Somewhere", "Value": "Non caDSR entry", "Version": "Unknown"}]
+                
     finaljson = {}
     finaljson['PropDefinitions']   = workingjson
     return finaljson          
 
-def writeYAML(filename, jsonthing):
-    with open(filename, 'w') as f:
-        yaml.dump(jsonthing, f)
-    f.close()
+#def writeYAML(filename, jsonthing):
+#    with open(filename, 'w') as f:
+#        yaml.dump(jsonthing, f)
+#    f.close()
         
 
 def main(args):
-    configs = readConfigs(args.configfile)
-    htan_csv_df = pd.read_csv(configs['htan_csv_file'])
+    configs = crdclib.readYAML(args.configfile)
+    #configs = readConfigs(args.configfile)
+    htan_csv_df = pd.read_csv(configs['csvschema'])
 
     #Get the unique properties
     nodes = htan_csv_df.Parent.unique()
 
     #Create the model JSON object (list of properties per node)
     mdfjson = parseModel(htan_csv_df, nodes)
-    writeYAML(configs['mdf_model_file'], mdfjson)
+    #writeYAML(configs['mdf_model_file'], mdfjson)
+    crdclib.writeYAML(configs['mdf_model_file'], mdfjson)
 
     #Now the fun stuff, make the properties file
     propjson = parseProps(htan_csv_df)
-    writeYAML(configs['mdf_model_props_file'], propjson)
+    crdclib.writeYAML(configs['mdf_props_file'], propjson)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
