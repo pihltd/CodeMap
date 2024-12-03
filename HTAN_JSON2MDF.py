@@ -2,20 +2,15 @@
 import argparse
 import pandas as pd
 import json
-import requests
-import yaml
+from crdclib import crdclib
 import pprint
-import sys
-
-def readConfigs(yamlfile):
-    with open(yamlfile) as f:
-        configs = yaml.load(f, Loader=yaml.FullLoader)
-    return configs
 
 def readSchema(jsonld):
     with open(jsonld, 'r') as f:
-        schema = json.loads(f.read())
+        #schema = json.loads(f.read())
+        schema = json.load(f.read())
     return schema
+
 
 def buildModel(jsonthing):
     mdfjson = {}
@@ -50,32 +45,29 @@ def buildModel(jsonthing):
     #pprint.pprint(mdfjson)
     return mdfjson
 
+
 def annotateProps(jsonmodel, csv_df):
     for node, properties in jsonmodel.items():
         for property in properties:
             if (csv_df['Attribute'] == property).any():
                 print(csv_df[csv_df['Attribute'] == property])
 
-def writeYAML(filename, jsonthing):
-    with open(filename, 'w') as f:
-        yaml.dump(jsonthing, f)
-    f.close()
 
 def main(args):
     #Read the config file
-    configs = readConfigs(args.configfile)
+    configs = crdclib.readYAML(args.configfile)
     #Read the JSONLD schema file
     htanschema = readSchema(configs['jsonschema'])
-    #pprint.pprint(htanschema)
-    graph = htanschema['@graph']
-    modeljson = buildModel(graph)
+    pprint.pprint(htanschema)
+    #graph = htanschema['@graph']
+   # modeljson = buildModel(graph)
     #pprint.pprint(modeljson)
     #Read the csv into a dataframe
-    htan_df = pd.read_csv(configs['csvschema'])
+    #htan_df = pd.read_csv(configs['csvschema'])
 
     annotateProps(modeljson, htan_df)
 
-    writeYAML(configs['mdf_model_file'], modeljson)
+    crdclib.writeYAML(configs['mdf_model_file'], modeljson)
 
 
 

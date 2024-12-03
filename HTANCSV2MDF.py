@@ -16,7 +16,7 @@ def snakeIt(stringname):
     stringname = stringname.replace("-", "_")
     stringname = stringname.replace("/", "_")
     stringname = stringname.replace(" ", "_")
-    stringname.lower()
+    stringname = stringname.lower()
     return stringname
 
 def parseModel(df, nodelist):
@@ -73,6 +73,10 @@ def typeCorrect(datatype):
         return('integer')
     elif datatype == 'str':
         return('string')
+    elif 'url' in datatype:
+        return('url')
+    elif 'list' in datatype:
+        return({"value_type": "list", "item_type":"string"})
     else:
         return('string')
     
