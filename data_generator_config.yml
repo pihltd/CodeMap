@@ -1,9 +1,0 @@
-"mdffiles":
-  - 'C:\Users\pihltd\Documents\modeltest\CRDC_Submission_20241125_MDF.yml'
-  - 'C:\Users\pihltd\Documents\modeltest\CRDC_Submission_20241125_MDF_Props.yml'
-"handle": handlename
-"IDFILE": idfile name
-"outputpath": 'C:\Users\pihltd\Documents\modeltest\data\'
-"outputname": "RandomTest"
-"providedvaluesfile": filepathhere
-"sheetname": "Sheet1"
