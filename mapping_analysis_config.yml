@@ -1,0 +1,4 @@
+"mdffiles":
+  - "https://raw.githubusercontent.com/CBIIT/cds-model/refs/heads/6.0.2/model-desc/cds-model.yml"
+  - "https://raw.githubusercontent.com/CBIIT/cds-model/refs/heads/6.0.2/model-desc/cds-model-props.yml"
+"mapfile": 'C:\Users\pihltd\Downloads\ccdi_to_cds_value_map_040725(in).csv'
