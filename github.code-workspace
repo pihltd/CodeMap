@@ -1,0 +1,24 @@
+{
+	"folders": [
+		{
+			"path": ".."
+		},
+		{
+			"name": "CDACloudOne",
+			"path": "../CDACloudOne"
+		},
+		{
+			"name": "RuleSetExperiment",
+			"path": "../RuleSetExperiment"
+		},
+		{
+			"name": "STSMDBStuff",
+			"path": "../STSMDBStuff"
+		},
+		{
+			"name": "AutoGenerateExample",
+			"path": "../AutoGenerateExample"
+		}
+	],
+	"settings": {}
+}
